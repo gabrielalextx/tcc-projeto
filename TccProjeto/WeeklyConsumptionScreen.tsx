@@ -6,6 +6,7 @@ import { Table, Row } from 'react-native-table-component';
 import { HomeScreenNavigationProp } from './App'; 
 import axios from 'axios';
 import { DateTime } from 'luxon';
+import Config from './Config';
 
 interface Props {
   navigation: HomeScreenNavigationProp;
@@ -25,7 +26,7 @@ const WeeklyConsumptionScreen: React.FC<Props> = () => {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get<TableDataItem[]>('http://192.168.0.32:3000/dados');
+        const response = await axios.get<TableDataItem[]>(`${Config.apiServer}/dados`);
         console.log('Dados recebidos do servidor:', response.data);
         setTableData(response.data);
       } catch (error) {
