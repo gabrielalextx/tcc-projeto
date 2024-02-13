@@ -1,16 +1,14 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-//import { Table, Row } from 'react-native-table-component';
-import { HomeScreenNavigationProp } from './App'; // Importe o tipo RootStackParamList do App
-//import axios from 'axios';
-//import { Timestamp } from 'react-native-reanimated';
-//import { format, startOfDay, isWithinInterval } from 'date-fns';
+import { HomeScreenNavigationProp } from './App'; 
+
 
 interface Props {
   navigation: HomeScreenNavigationProp;
 }
 
+//Botões de navegação entre as 3 telas
 const ConsumptionScreen: React.FC<Props> = ({ navigation }) => {
   const handleDailyPress = () => {
     navigation.navigate('DailyConsumption');

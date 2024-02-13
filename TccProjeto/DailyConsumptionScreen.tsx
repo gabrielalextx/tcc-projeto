@@ -1,7 +1,7 @@
 //DailyConsumptionScreen.tsx
 
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Table, Row } from 'react-native-table-component';
 import { HomeScreenNavigationProp } from './App'; 
 import axios from 'axios';
@@ -74,40 +74,48 @@ const DailyConsumptionScreen: React.FC<Props> = () => {
         : filteredData[i].consumo;
   
       if (!isNaN(consumptionValue)) {
-        total += consumptionValue;
+        total += consumptionValue / 1000;
       }
     }
   
-    return total.toFixed(2) + ' kWh';
+    return total.toFixed(4) + ' kWh';
+  };
+
+  const calculateCost = (totalConsumption: number): string => {
+    const tariff = 0.693; // Valor da tarifa em reais por kWh
+    const cost = totalConsumption * tariff;
+    return `R$ ${cost.toFixed(2)}`;
   };
   
   
   return (
-    <View style={styles.container}>
-      <Table borderStyle={styles.tableBorder}>
-        <Row
-          data={['Data', 'Horário', 'Consumo']}
-          style={styles.head}
-          textStyle={styles.headText}
-        />
-        {filteredData.map((rowData, index) => (
+    <ScrollView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <Table borderStyle={styles.tableBorder}>
           <Row
-            key={index}
-            data={[formatData(new Date(rowData.data)), rowData.horario, rowData.consumo.toString()]}
-            style={[
-              styles.row,
-              index % 2 === 1 ? styles.rowAlternate : null
-            ]}
-            textStyle={styles.text}
+            data={['Data', 'Horário', 'Consumo (kWh)']}
+            style={styles.head}
+            textStyle={styles.headText}
           />
-        ))}
-        <Row
-          data={['Total', calculateTotalConsumption()]}
-          style={styles.totalRow}
-          textStyle={styles.totalText}
-        />
-      </Table>
-    </View>
+          {filteredData.map((rowData, index) => (
+            <Row
+              key={index}
+              data={[formatData(new Date(rowData.data)), rowData.horario, rowData.consumo.toString()]}
+              style={[
+                styles.row,
+                index % 2 === 1 ? styles.rowAlternate : null
+              ]}
+              textStyle={styles.text}
+            />
+          ))}
+          <Row
+            data={['Total', calculateTotalConsumption(), calculateCost(parseFloat(calculateTotalConsumption()))]}
+            style={styles.totalRow}
+            textStyle={styles.totalText}
+          />
+        </Table>
+      </View>
+    </ScrollView>
   );
 };
 

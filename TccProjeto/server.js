@@ -4,6 +4,7 @@ const mysql = require('mysql2');
 const app = express();
 const port = 3000;
 
+// Conexão com o banco de dados
 const connection = mysql.createConnection({
   host: 'localhost',
   user: 'gabriel',

@@ -1,7 +1,7 @@
 //DailyConsumptionScreen.tsx
 
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Table, Row } from 'react-native-table-component';
 import { HomeScreenNavigationProp } from './App'; 
 import axios from 'axios';
@@ -58,6 +58,28 @@ const WeeklyConsumptionScreen: React.FC<Props> = () => {
     return luxonDate.toFormat('dd-MM-yyyy');
   }; 
 
+  //Função para calcular o valor de consumo de cada dia da semana
+  const calculateDailyTotal = (date: DateTime): string => {
+    const dailyData = filteredData.filter(item => {
+      const itemDate = DateTime.fromISO(item.data, {zone: timeZone}).startOf('day');
+      return itemDate.hasSame(date, 'day');
+    });
+
+    let total = 0;
+
+    for (let i = 0; i < dailyData.length; i++) {
+      const consumptionValue = typeof dailyData[i].consumo === 'string'
+        ? parseFloat(dailyData[i].consumo)
+        : dailyData[i].consumo;
+
+      if (!isNaN(consumptionValue)) {
+        total += consumptionValue / 1000;
+      }
+    }
+
+    return total.toFixed(4) + ' kWh';
+  };
+
   // Função para calcular o valor total de consumo
   const calculateTotalConsumption = (): string => {
     let total = 0;
@@ -68,40 +90,50 @@ const WeeklyConsumptionScreen: React.FC<Props> = () => {
         : filteredData[i].consumo;
   
       if (!isNaN(consumptionValue)) {
-        total += consumptionValue;
+        total += consumptionValue / 1000;
       }
     }
   
-    return total.toFixed(2) + ' kWh';
+    return total.toFixed(4) + ' kWh';
   };
   
+  const calculateCost = (totalConsumption: number): string => {
+    const tariff = 0.693; // Valor da tarifa em reais por kWh
+    const cost = totalConsumption * tariff;
+    return `R$ ${cost.toFixed(2)}`;
+  };
   
   return (
-    <View style={styles.container}>
-      <Table borderStyle={styles.tableBorder}>
-        <Row
-          data={['Dia','Consumo']}
-          style={styles.head}
-          textStyle={styles.headText}
-        />
-        {filteredData.map((rowData, index) => (
+    <ScrollView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <Table borderStyle={styles.tableBorder}>
           <Row
-            key={index}
-            data={[formatData(new Date(rowData.data)), rowData.horario, rowData.consumo.toString()]}
-            style={[
-              styles.row,
-              index % 2 === 1 ? styles.rowAlternate : null
-            ]}
-            textStyle={styles.text}
+            data={['Dia','Consumo']}
+            style={styles.head}
+            textStyle={styles.headText}
           />
-        ))}
-        <Row
-          data={['Total', calculateTotalConsumption()]}
-          style={styles.totalRow}
-          textStyle={styles.totalText}
-        />
-      </Table>
-    </View>
+          {Array.from({ length: 7 }, (_, index) => {
+              const dayDate = startOfWeekDate.plus({ days: index });
+              return (
+                <Row
+                  key={index}
+                  data={[formatData(dayDate.toJSDate()), calculateDailyTotal(dayDate)]}
+                  style={[
+                    styles.row,
+                    index % 2 === 1 ? styles.rowAlternate : null
+                  ]}
+                  textStyle={styles.text}
+                />
+              );
+            })}
+          <Row
+            data={['Total', calculateTotalConsumption(), calculateCost(parseFloat(calculateTotalConsumption()))]}
+            style={styles.totalRow}
+            textStyle={styles.totalText}
+          />
+        </Table>
+      </View>
+    </ScrollView>
   );
 };
 
